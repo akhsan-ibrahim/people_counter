@@ -3,3 +3,6 @@ env/
 
 # Ignore Python cache
 __pycache__/
+
+# Ignore model detection
+*.pt
