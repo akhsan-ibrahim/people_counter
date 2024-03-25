@@ -11,3 +11,7 @@ __pycache__/
 /deep_sort
 /model_data
 tracker.py
+
+# Ignore trial file
+*.mp4
+coba.py
