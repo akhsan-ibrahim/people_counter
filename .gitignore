@@ -6,3 +6,8 @@ __pycache__/
 
 # Ignore model detection
 *.pt
+
+# Ignore tracker algorithm
+/deep_sort
+/model_data
+tracker.py
