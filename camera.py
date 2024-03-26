@@ -21,14 +21,15 @@ class Camera():
          (600,420) # Top right
       ]
       self.people = {}
-      self.people_in = {}
-      self.people_out = {}
+      self.enter = {}
+      self.exit = {}
       
    def distance(self, x1, y1, x2, y2):
+      """Find distance between two points with Pythagorean theorem"""
       num_a = math.pow((x2-x1), 2)
       num_b = math.pow((y2-y1), 2)
-      result = math.sqrt(num_a + num_b)
-      return result
+      c = math.sqrt(num_a + num_b) # Longest side
+      return c
       
    def get_frame(self):
       """Get video frame"""
@@ -56,47 +57,51 @@ class Camera():
             y2 = int(y2)
             person_id = track.track_id
             
-            xa = self.polygon_points[0][0] # top
-            ya = self.polygon_points[0][1] # left
-            xb = self.polygon_points[1][0] # bottom
-            yb = self.polygon_points[1][1] # left
-            xc = self.polygon_points[2][0] # bottom
-            yc = self.polygon_points[2][1] # right
-            xd = self.polygon_points[3][0] # top
-            yd = self.polygon_points[3][1] # right
+            px1 = self.polygon_points[0][0] # top
+            py1 = self.polygon_points[0][1] # left
+            px2 = self.polygon_points[1][0] # bottom
+            py2 = self.polygon_points[1][1] # left
+            px3 = self.polygon_points[2][0] # bottom
+            py3 = self.polygon_points[2][1] # right
+            px4 = self.polygon_points[3][0] # top
+            py4 = self.polygon_points[3][1] # right
             
-            result_a = self.distance(xa, ya, x2, y2) + self.distance(xb, yb, x2, y2)
-            result_b = self.distance(xa, ya, xb, yb)
-            result_1 = round(result_a, 3) - round(result_b, 3)
+            d1_person = self.distance(px1, py1, x2, y2) + self.distance(px2, py2, x2, y2)
+            d1_line = self.distance(px1, py1, px2, py2)
+            person_to_line_1 = round(d1_person, 3) - round(d1_line, 3)
             
-            result_c = self.distance(xc, yc, x2, y2) + self.distance(xd, yd, x2, y2)
-            result_d = self.distance(xc, yc, xd, yd)
-            result_2 = round(result_c, 3) - round(result_d, 3)
+            d2_person = self.distance(px3, py3, x2, y2) + self.distance(px4, py4, x2, y2)
+            d2_line = self.distance(px3, py3, px4, py4)
+            person_to_line_2 = round(d2_person, 3) - round(d2_line, 3)
             
-            if result_1 <= 1 and result_1 >= -1: # Left line
+            if person_to_line_1 <= 1: # Left line
                if person_id not in self.people.keys():
                   self.people[person_id] = "in"
+                  
                if self.people[person_id] == "out":
-                  self.people_in[person_id] = [x2,y2]
+                  self.enter[person_id] = [x2,y2]
                   self.people.pop(person_id)
                   
-            if result_2 <= 1 and result_2 >= -1: # Right line
+            if person_to_line_2 <= 1: # Right line
                if person_id not in self.people.keys():
                   self.people[person_id] = "out"
+                  
                if self.people[person_id] == "in":
-                  self.people_out[person_id] = [x2,y2]
+                  self.exit[person_id] = [x2,y2]
                   self.people.pop(person_id)
             
             cv2.rectangle(frame, (x1,y1), (x2,y2), self.colors[person_id % len(self.colors)], 3)
             cv2.putText(frame, str(person_id), (x1,y1), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 2)
+            cv2.line(frame, (px1,py1), (x2,y2), (0,255,255), 1, cv2.LINE_8)
+            cv2.putText(frame, f"{round(person_to_line_1,2)}", (x2,y2+5), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 1)
       
-      print(self.people, self.people_in, self.people_out)
+      print(self.people, self.enter, self.exit)
       cv2.polylines(frame, [np.array(self.polygon_points,np.int32)], True, (0,0,0), 1)
       cv2.line(frame, (self.polygon_points[0]), (self.polygon_points[1]), (255,0,0), 3) # Left line
       cv2.line(frame, (self.polygon_points[2]), (self.polygon_points[3]), (0,255,0), 3) # Right line
       
-      cv2.putText(frame, f"Enter : {len(self.people_in)}", (10,60), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 2)
-      cv2.putText(frame, f"Exit : {len(self.people_out)}", (10,100), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 2)
+      cv2.putText(frame, f"Enter : {len(self.enter)}", (10,60), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 2)
+      cv2.putText(frame, f"Exit : {len(self.exit)}", (10,100), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 2)
       
       ret, jpeg = cv2.imencode(".jpg", frame) # Convert frame to jpeg image
       return jpeg.tobytes() # Convert jpeg to byte for send to web browser
