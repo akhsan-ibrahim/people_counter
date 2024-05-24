@@ -1,11 +1,12 @@
 # Ignore virtual enviroment
-env/
+*env/
 
 # Ignore Python cache
 __pycache__/
 
 # Ignore model detection
 *.pt
+yolov8n_openvino_model/
 
 # Ignore tracker algorithm
 /deep_sort
