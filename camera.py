@@ -8,7 +8,7 @@ import time
 
 class Camera():
    def __init__(self):
-      self.live = True
+      self.live = False
       self.cap = self.source(self.live)
       
       self.frame_save = []
@@ -31,6 +31,7 @@ class Camera():
          [610+70, 1080],
          [900+300, 1080]
       ]
+      '''
       self.area_out = [
          [900-130,340-30],
          [610-30, 340],
@@ -43,6 +44,20 @@ class Camera():
          [610+60, 1080],
          [900+300, 1080]
       ]
+      '''
+      self.area_out = [
+         [800-60,130-30],
+         [450+80, 130-3],
+         [450+15, 530-80-5],
+         [800+155, 530-135]
+      ]
+      self.area_in = [
+         [800+155, 530-135+5],
+         [450+15, 530-80],
+         [450-20, 1080],
+         [800+700, 1080]
+      ]
+      
       self.px1 = self.polygon_points[0][0] # top
       self.py1 = self.polygon_points[0][1] # left
       self.px2 = self.polygon_points[1][0] # bottom
@@ -70,7 +85,7 @@ class Camera():
       return c
    
    def source(self, live):
-      cap = cv2.VideoCapture("rekaman300424.mp4")
+      cap = cv2.VideoCapture("Sabtu coba Bu Syifa.mp4")
       if live == True:
          cap = cv2.VideoCapture("rtsp://admin:admin123@192.168.195.167:554/Streaming/Channels/501")
       return cap
@@ -141,8 +156,8 @@ class Camera():
                   
                   # prev_centroid = []
                   
-                  check_out = cv2.pointPolygonTest(np.array(self.area_out,np.int32), (x2,y2), False)
-                  check_in = cv2.pointPolygonTest(np.array(self.area_in,np.int32), (x2,y2), False)
+                  check_out = cv2.pointPolygonTest(np.array(self.area_out,np.int32), (x1,y1), False)
+                  check_in = cv2.pointPolygonTest(np.array(self.area_in,np.int32), (x1,y1), False)
                   
                   if check_out == 1:
                      if person_id not in self.people.keys():
@@ -207,7 +222,7 @@ class Camera():
       cv2.polylines(frame, [np.array(self.area_in,np.int32)], True, (0,255,0), 1)
       # cv2.line(frame, (self.polygon_points[0]), (self.polygon_points[1]), (255,0,0), 3) # Left line
       # cv2.line(frame, (self.polygon_points[2]), (self.polygon_points[3]), (0,255,0), 3) # Right line
-      # cv2.rectangle(frame, (0,0), (900, 1080), (255,255,255), -1)
+      cv2.rectangle(frame, (0,0), (900, 1080), (255,255,255), 1)
       
       # cv2.putText(frame, f"{self.enter} Enter", (60,160), cv2.FONT_HERSHEY_COMPLEX, 2, (0,0,255), 4)
       # cv2.putText(frame, f"{self.exit} Exit", (60,220), cv2.FONT_HERSHEY_COMPLEX, 2, (0,0,255), 4)
