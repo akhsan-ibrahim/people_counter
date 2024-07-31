@@ -12,7 +12,7 @@ yolov8n_openvino_model/
 # Ignore tracker algorithm
 # /deep_sort
 # /model_data
-tracker.py
+# tracker.py
 
 # Ignore trial file
 # *.mp4
