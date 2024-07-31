@@ -1,18 +1,20 @@
 # Ignore virtual enviroment
 *env/
 
-# Ignore Python cache
+# Ignore Python and VSCode cache
 __pycache__/
+.vscode/
 
 # Ignore model detection
 *.pt
 yolov8n_openvino_model/
 
 # Ignore tracker algorithm
-/deep_sort
-/model_data
+# /deep_sort
+# /model_data
 tracker.py
 
 # Ignore trial file
 *.mp4
 coba.py
+/video

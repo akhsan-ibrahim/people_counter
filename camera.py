@@ -46,18 +46,24 @@ class Camera():
       ]
       '''
       self.area_out = [
-         [800-60,130-30],
-         [450+80, 130-3],
-         [450+15, 530-80-5],
-         [800+155, 530-135]
+         [530, 70],
+         [825-1, 40],
+         [825-1, 200],
+         [720-1, 210-1],
+         [630, 260-1],
+         [490, 270-1]
       ]
       self.area_in = [
-         [800+155, 530-135+5],
-         [450+15, 530-80],
-         [450-20, 1080],
-         [800+700, 1080]
+         [825, 120],
+         [880, 125],
+         [1920, 1080],
+         [400, 1080],
+         [490, 270],
+         [630, 260],
+         [720, 210],
+         [825, 200]
       ]
-      
+            
       self.px1 = self.polygon_points[0][0] # top
       self.py1 = self.polygon_points[0][1] # left
       self.px2 = self.polygon_points[1][0] # bottom
@@ -70,12 +76,12 @@ class Camera():
       self.locations = {}
       
       self.people = {}
-      self.enter = 4
+      self.enter = 0
       self.exit = 0
       
       # self.people = []
-      self.person_enter = []
-      self.person_exit = []
+      self.person_enter = [i for i in range(0,8)]
+      self.person_exit = [i for i in range(0,3)]
       
    def distance(self, x1, y1, x2, y2):
       """Find distance between two points with Pythagorean theorem"""
@@ -85,7 +91,7 @@ class Camera():
       return c
    
    def source(self, live):
-      cap = cv2.VideoCapture("Sabtu coba Bu Syifa.mp4")
+      cap = cv2.VideoCapture("resources/Demo.mp4")
       if live == True:
          cap = cv2.VideoCapture("rtsp://admin:admin123@192.168.195.167:554/Streaming/Channels/501")
       return cap
@@ -94,8 +100,9 @@ class Camera():
       """Get video frame"""
       start = time.time()
       ret, frame = self.cap.read()
+      # print(f"RET : {ret}")
                
-      roi = frame[0:1080, 0:900]
+      roi = frame[0:1080, 0:860]
       
       self.frame_save.append(frame)
       # frame = cv2.resize(frame,(880,440))
@@ -113,7 +120,7 @@ class Camera():
                x1, y1, x2, y2, score, class_id = r
                
                if score <= 0.4:
-                  print("LESS ACCURACY")
+                  # print("LESS ACCURACY")
                   continue
                
                x1 = int(x1)
@@ -122,6 +129,7 @@ class Camera():
                y2 = int(y2)
                class_id = int(class_id)
                detections.append([x1, y1, x2, y2, score])
+               print(f"SCORE : {score}")
             
             if not detections:
                self.count_skip += 10
@@ -137,24 +145,6 @@ class Camera():
                   x2 = int(x2)
                   y2 = int(y2)
                   person_id = track.track_id
-                  
-                  # if person_id not in self.locations.keys():
-                  #    self.locations[person_id] = (x2,y2)
-                  # else:
-                  #    dx = x2 - self.locations[person_id][0]
-                  #    dy = y2 - self.locations[person_id][1]
-                  #    distance = np.sqrt(dx**2 + dy**2)
-                     
-                  #    if distance < 3 and len(detections) < 2:
-                  #       print("LESS than 5")
-                  #       self.count_skip += 10
-                  #       self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.count_skip+self.frame_count)
-                  #       continue
-                     
-                  #    print("MORE than 5")
-                  #    self.locations[person_id] = (x2,y2)
-                  
-                  # prev_centroid = []
                   
                   check_out = cv2.pointPolygonTest(np.array(self.area_out,np.int32), (x1,y1), False)
                   check_in = cv2.pointPolygonTest(np.array(self.area_in,np.int32), (x1,y1), False)
@@ -177,38 +167,8 @@ class Camera():
                         self.person_enter.append(person_id)
                         self.people.clear()
                   
-                     
-                  
-                  '''
-                  d1_person = self.distance(self.px1, self.py1, x2, y2) + self.distance(self.px2, self.py2, x2, y2)
-                  d1_line = self.distance(self.px1, self.py1, self.px2, self.py2)
-                  person_to_line_1 = round(d1_person, 3) - round(d1_line, 3)
-                  
-                  d2_person = self.distance(self.px3, self.py3, x2, y2) + self.distance(self.px4, self.py4, x2, y2)
-                  d2_line = self.distance(self.px3, self.py3, self.px4, self.py4)
-                  person_to_line_2 = round(d2_person, 3) - round(d2_line, 3)
-                  
-                  if person_to_line_2 <= 1: # Green line
-                     if person_id not in self.people.keys():
-                        self.people[person_id] = "in"
-                        
-                     if self.people[person_id] == "out":
-                        # self.enter[person_id] = [x2,y2]
-                        self.enter += 1
-                        self.people.pop(person_id)
-                        
-                  if person_to_line_1 <= 1: # Blue line
-                     if person_id not in self.people.keys():
-                        self.people[person_id] = "out"
-                        
-                     if self.people[person_id] == "in":
-                        # self.exit[person_id] = [x2,y2]
-                        self.exit += 1
-                        self.people.pop(person_id)
-                  '''
-                  
                   cv2.rectangle(roi, (x1,y1), (x2,y2), self.colors[person_id % len(self.colors)], 3)
-                  # cv2.putText(frame, str(person_id), (x1,y1), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 2)
+                  cv2.putText(frame, f"id {person_id}", (x1,y1), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 2)
                   # cv2.line(frame, (self.px1,self.py1), (x2,y2), (0,255,255), 1, cv2.LINE_8)
                   # cv2.putText(frame, f"{round(person_to_line_1,2)}", (x2,y2+5), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 1)
                   # cv2.putText(frame, f"Cek +{tes}", (x2,y2+5), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,255), 2)
@@ -218,11 +178,11 @@ class Camera():
       # print("OUT",self.person_exit)
       
       # cv2.polylines(frame, [np.array(self.polygon_points,np.int32)], True, (0,0,0), 1)
-      cv2.polylines(frame, [np.array(self.area_out,np.int32)], True, (255,0,0), 1)
-      cv2.polylines(frame, [np.array(self.area_in,np.int32)], True, (0,255,0), 1)
+      cv2.polylines(frame, [np.array(self.area_out,np.int32)], True, (255,0,0), 2)
+      cv2.polylines(frame, [np.array(self.area_in,np.int32)], True, (0,255,0), 2)
       # cv2.line(frame, (self.polygon_points[0]), (self.polygon_points[1]), (255,0,0), 3) # Left line
       # cv2.line(frame, (self.polygon_points[2]), (self.polygon_points[3]), (0,255,0), 3) # Right line
-      cv2.rectangle(frame, (0,0), (900, 1080), (255,255,255), 1)
+      cv2.rectangle(frame, (0,0), (860, 1080), (255,255,255), 2)
       
       # cv2.putText(frame, f"{self.enter} Enter", (60,160), cv2.FONT_HERSHEY_COMPLEX, 2, (0,0,255), 4)
       # cv2.putText(frame, f"{self.exit} Exit", (60,220), cv2.FONT_HERSHEY_COMPLEX, 2, (0,0,255), 4)
